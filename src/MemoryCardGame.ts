@@ -6,29 +6,33 @@ interface IGameDOM {
     reset: HTMLButtonElement,
 }
 
+type CardElement = HTMLDivElement;
+
 type Card = {
-    pair: CardPair|null,
-    el: HTMLDivElement,
+    value: string,
+    revealed: boolean,
+    otherCard?: Card,
+    el: CardElement,
+    timeoutHandler: number|null,
 }
 
-type CardPair = {
-    card1: Card,
-    // pos1: number,
-    card2: Card,
-    // pos2: number,
-}
+type Cards = Array<Card>;
 
-type CardPairs = Map<string, CardPair>;
+type ElementToCardMap = WeakMap<CardElement, Card>
 
 class Game {
+    private static readonly numberOfPairs: number = 5;
+    private static readonly cardRevealTimeoutMillisecond: number = 3000;
+
     private dom: IGameDOM;
-    private numberOfPairs: number = 5;
     private revealedCount: number = 0;
-    private cardRevealTimeoutMillisecond: number = 3000;
-    private previousCard: HTMLDivElement|null = null;
+    private previousCard: Card|null = null;
+    private elementToCardMap: ElementToCardMap;
+    private cards: Cards = [];
 
     public constructor(domInterface: IGameDOM) {
         this.dom = domInterface;
+        this.elementToCardMap = new WeakMap;
 
         this.init();
     }
@@ -41,114 +45,108 @@ class Game {
     private start = (): void => {
         // todo show reset
         // todo hide start
-        const pairs: CardPairs = this.generatePairs(this.numberOfPairs);
-        this.placeCards(pairs);
+        this.generateCards();
+        this.shuffleCards();
+        this.placeCards();
     }
 
     private reset = (): void => {
         console.log('reset!')
     }
 
-    private generatePairs(numberOfPairs: number): CardPairs {
-        const pairs: CardPairs = new Map();
+    private generateCards(): void {
+        for (let i: number = 0; i < Game.numberOfPairs; i++) {
+            const value: string = String(i + 1);
 
-        for (let i: number = 0; i < numberOfPairs; i++) {
-            const card1 = {
-                pair: null,
-                el: this.generateCardHtml(String(i + 1)),
+            const card1: Card = {
+                value: value,
+                revealed: false,
+                el: this.generateCardHtml(value),
+                timeoutHandler: null,
             }
-            const card2 = {
-                pair: null,
-                el: this.generateCardHtml(String(i + 1)),
+            const card2: Card = {
+                value: value,
+                revealed: false,
+                otherCard: card1,
+                el: this.generateCardHtml(value),
+                timeoutHandler: null,
             }
+            card1.otherCard = card1;
 
-            const pair: CardPair = {
-                card1: card1,
-                card2: card2,
-            }
+            this.elementToCardMap.set(card1.el, card1);
+            this.elementToCardMap.set(card2.el, card2);
 
-            pairs.set(String(i + 1), pair);
+            this.cards.push(card1);
+            this.cards.push(card2);
         }
-
-        return pairs;
     }
 
-    private generateCardHtml(text: string): HTMLDivElement {
-        const card: HTMLDivElement = this.dom.window.document.createElement('div');
-        card.innerHTML = text;
-        card.dataset.value = text;
-        card.dataset.revealed = 'no';
+    private shuffleCards(): void {
+        for (let i: number = this.cards.length - 1; i > 0; i--) {
+            const j: number = Math.floor((Math.random() * (i + 1)));
+            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+        }
+    }
+
+    private generateCardHtml(value: string): CardElement {
+        const card: CardElement = this.dom.window.document.createElement('div');
+        card.innerHTML = value;
         card.classList.add('hide')
 
         return card;
     }
 
-    private placeCards(pairs: CardPairs): void {
-        let cards = new Array<Card>;
+    private placeCards(): void {
+        for (const card of this.cards) {
+            card.el.addEventListener('click', this.cardClickHandler)
 
-        pairs.forEach((pair: CardPair) => {
-            cards.push(pair.card1);
-            cards.push(pair.card2);
-        });
-
-        cards = this.shuffleCards(cards);
-
-        for (const card of cards) {
-            const el = card.el;
-            el.addEventListener('click', this.clickHandler)
-
-            this.dom.cards.appendChild(el);
+            this.dom.cards.appendChild(card.el);
         }
     }
 
-    private clickHandler = (e: Event): void => {
-        const el = e.currentTarget as HTMLDivElement;
-        if (el.dataset.revealed == 'yes') {
+    private cardClickHandler = (e: Event): void => {
+        const el = e.currentTarget as CardElement;
+        const card: Card = this.elementToCardMap.get(el) as Card;
+
+        if (card === this.previousCard && card.revealed) {
             return;
         }
-        console.log(`Clicked  ${el.dataset.value}!`);
 
-        el.classList.remove('hide');
+        this.revealCardElement(card);
 
-        console.log('---');
-        console.log(this.previousCard);
-        console.log(this.previousCard?.dataset.value);
-        console.log(el.dataset.value);
+        if (this.previousCard != null && this.previousCard.value == card.value) {
+            this.disableTimedHiding(this.previousCard);
 
-
-        if (this.previousCard != null
-            && this.previousCard.dataset.value == el.dataset.value) {
-            window.clearTimeout(Number(this.previousCard.dataset.timeoutHandler));
+            this.previousCard = null;
             this.revealedCount += 2;
-
-            if (this.revealedCount = 2 * this.numberOfPairs) {
-
-            }
         } else {
-            this.previousCard = el;
-            el.dataset.revealed = 'yes';
-            const timeoutHandler: number = this.dom.window.setTimeout(() => {
-                this.hideAgain(el);
-            }, this.cardRevealTimeoutMillisecond);
-
-            el.dataset.timeoutHandler = String(timeoutHandler);
+            this.previousCard = card;
+            this.setTimeoutForHiding(card);
         }
     }
 
-    private hideAgain = (el: HTMLDivElement): void => {
-        el.classList.add('hide');
-        el.dataset.revealed = 'no';
+    private hideAgain = (card: Card): void => {
+        card.revealed = false;
+        card.timeoutHandler = null;
+
+        card.el.classList.add('hide');
+
         this.previousCard = null;
     }
 
-    private shuffleCards(cards: Array<Card>): Array<Card> {
-        const arr = [...cards];
-        for (let i: number = arr.length - 1; i > 0; i--) {
-            const j: number = Math.floor((Math.random() * (i + 1)));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
+    private revealCardElement(card: Card): void {
+        card.revealed = true;
+        card.el.classList.remove('hide');
+    }
 
-        return arr;
+    private disableTimedHiding(card: Card): void {
+        window.clearTimeout(Number(card.timeoutHandler));
+    }
+
+    private setTimeoutForHiding(card: Card): void {
+        card.timeoutHandler = this.dom.window.setTimeout(() => {
+            this.hideAgain(card);
+        }, Game.cardRevealTimeoutMillisecond);
     }
 }
 
