@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ESNext",                          /* Modern JavaScript for browsers */
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],    /* Include browser APIs */
+
+    /* Modules */
+    "module": "ESNext",                          /* Use ES modules */
+    "moduleResolution": "node",               /* Modern module resolution */
+
+    /* Emit */
+    "outDir": "./dist",                          /* Output compiled JS here */
+    "rootDir": "./src",                          /* Source files location */
+    "sourceMap": true,                           /* Generate .map files for debugging */
+    "removeComments": true,                      /* Smaller output files */
+
+    /* Interop Constraints */
+    "esModuleInterop": true,                     /* Better compatibility */
+    "forceConsistentCasingInFileNames": true,    /* Enforce case sensitivity */
+
+    /* Type Checking */
+    "strict": true,                              /* Enable all strict checks */
+    "noUnusedLocals": true,                      /* Warn about unused variables */
+    "noUnusedParameters": true,                  /* Warn about unused params */
+    "noImplicitReturns": true,                   /* Ensure functions return values */
+    "noFallthroughCasesInSwitch": true,          /* Catch switch fallthrough bugs */
+
+    /* Completeness */
+    "skipLibCheck": true                         /* Skip type checking of .d.ts files */
+  },
+  "include": ["src/**/*"],                       /* Include all .ts files in src/ */
+  "exclude": ["node_modules", "dist"]            /* Don't compile these */
+}
