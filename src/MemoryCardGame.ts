@@ -1,16 +1,9 @@
-
-interface IGameDOM {
-    window: Window,
-    cards: HTMLDivElement,
-    start: HTMLButtonElement,
-    reset: HTMLButtonElement,
-}
-
-type CardElement = HTMLDivElement;
+import { CardElement, IUI, uiFactory, IGameDOM } from "./UI.js"
 
 type Card = {
     value: string,
     revealed: boolean,
+    solved: boolean,
     otherCard?: Card,
     el: CardElement,
     timeoutHandler: number|null,
@@ -29,10 +22,12 @@ class Game {
     private previousCard: Card|null = null;
     private elementToCardMap: ElementToCardMap;
     private cards: Cards = [];
+    private ui: IUI;
 
     public constructor(domInterface: IGameDOM) {
         this.dom = domInterface;
         this.elementToCardMap = new WeakMap;
+        this.ui = uiFactory(domInterface);
 
         this.init();
     }
@@ -61,14 +56,16 @@ class Game {
             const card1: Card = {
                 value: value,
                 revealed: false,
-                el: this.generateCardHtml(value),
+                solved: false,
+                el: this.ui.createCard(value),
                 timeoutHandler: null,
             }
             const card2: Card = {
                 value: value,
                 revealed: false,
+                solved: false,
                 otherCard: card1,
-                el: this.generateCardHtml(value),
+                el: this.ui.createCard(value),
                 timeoutHandler: null,
             }
             card1.otherCard = card1;
@@ -88,19 +85,10 @@ class Game {
         }
     }
 
-    private generateCardHtml(value: string): CardElement {
-        const card: CardElement = this.dom.window.document.createElement('div');
-        card.innerHTML = value;
-        card.classList.add('hide')
-
-        return card;
-    }
-
     private placeCards(): void {
         for (const card of this.cards) {
-            card.el.addEventListener('click', this.cardClickHandler)
-
-            this.dom.cards.appendChild(card.el);
+            this.ui.setClickHandler(card.el, this.cardClickHandler);
+            this.ui.appendCard(card.el);
         }
     }
 
@@ -108,14 +96,17 @@ class Game {
         const el = e.currentTarget as CardElement;
         const card: Card = this.elementToCardMap.get(el) as Card;
 
-        if (card === this.previousCard && card.revealed) {
+        if (card.solved || card === this.previousCard && card.revealed) {
             return;
         }
 
-        this.revealCardElement(card);
+        this.revealCard(card);
 
         if (this.previousCard != null && this.previousCard.value == card.value) {
             this.disableTimedHiding(this.previousCard);
+
+            card.solved = true;
+            this.previousCard.solved = true;
 
             this.previousCard = null;
             this.revealedCount += 2;
@@ -129,18 +120,19 @@ class Game {
         card.revealed = false;
         card.timeoutHandler = null;
 
-        card.el.classList.add('hide');
+        this.ui.hide(card.el);
 
         this.previousCard = null;
     }
 
-    private revealCardElement(card: Card): void {
+    private revealCard(card: Card): void {
         card.revealed = true;
-        card.el.classList.remove('hide');
+
+        this.ui.reveal(card.el);
     }
 
     private disableTimedHiding(card: Card): void {
-        window.clearTimeout(Number(card.timeoutHandler));
+        this.dom.window.clearTimeout(Number(card.timeoutHandler));
     }
 
     private setTimeoutForHiding(card: Card): void {

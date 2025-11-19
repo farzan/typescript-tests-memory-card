@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+:root {
+    --spacing: 4px;
+
+    --card-grid-columns: repeat(4, 1fr);
+    --card-gap: 15px 15px;
+
+    --card-width: min(120px, 15vw);
+    --card-height: calc(var(--card-width) * 1.4);
+    --card-border-radius: calc(var(--card-width) * 0.08);
+    --card-font-size: calc(var(--card-width) * 0.7);
+
+    --card-grid-column-count: 4;
+    --card-grid-template-cols: repeat(var(--card-grid-column-count), auto);
+}
+
+#cards .card.hide {
+    color: #aaaaaa;
+    background : repeating-linear-gradient(
+        45deg,
+        rgb(255, 225, 225),
+        rgb(255, 225, 225),
+        white 10px,
+        white 20px
+    );
+}
+
+#cards .card.hide .card-content {
+    visibility: hidden;
+}
+
+#cards.cheating .card.hide .card-content {
+    visibility: visible;
+}

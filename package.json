@@ -9,8 +9,15 @@
   },
   "type": "module",
   "scripts": {
+    "ts:compile": "tsc",
+    "ts:watch": "tsc --watch",
     "serve": "serve . -l 8080",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "css:watch": "npx @tailwindcss/cli -i ./src/app.css -o ./dist/app.css --watch"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.17",
+    "tailwindcss": "^4.1.17"
   }
 }

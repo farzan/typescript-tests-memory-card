@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="dist/app.css">
 </head>
 <body>
-    <div id="cards"></div>
-    <div id="buttons">
-        <button id="btn-start">Start</button>
-        <button id="btn-reset" style="display: none;">Reset</button>
+    <div class="px-5 py-5">
+        <div id="cards" class="
+            p-5 mb-5 border-2 border-gray-600 min-h-10 rounded-xl
+            inline-grid
+            grid-cols-(--card-grid-template-cols)
+            gap-(--card-gap)
+            justify-start
+        "></div>
+        <div id="controls" class="
+            flex flex-row flex-wrap items-center gap-5
+        ">
+            <button id="btn-start" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">Start</button>
+            <button id="btn-reset" style="display: none;">Reset</button>
+            <label for="cheat" class="checkbox">
+                <input type="checkbox" id="cheat" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
+                Cheat
+            </label>
+        </div>
     </div>
+
+    <template id="card-template">
+        <div class="
+        card
+        grid place-items-center
+        w-(--card-width)
+        h-(--card-height)
+        p-2
+        text-(length:--card-font-size)
+        font-black
+        rounded-(--card-border-radius)
+        border border-gray-400
+        shadow-md
+        ">
+            <div class="card-content"></div>
+    </div>
+    </template>
+
     <script type="module" src="dist/app.js"></script>
 </body>
 </html>
