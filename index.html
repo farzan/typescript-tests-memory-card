@@ -5,18 +5,43 @@
 </head>
 <body>
     <div class="px-5 py-5">
-        <div id="cards" class="
-            p-5 mb-5 border-2 border-gray-600 min-h-10 rounded-xl
-            inline-grid
-            grid-cols-(--card-grid-template-cols)
-            gap-(--card-gap)
-            justify-start
-        "></div>
+        <div class="inline-flex flex-col">
+            <div class="
+                inline-grid relative
+                p-5 mb-5 border-2 border-gray-600 min-h-10 rounded-xl
+            ">
+                <div id="cards" class="
+
+                    inline-grid
+                    grid-cols-(--card-grid-template-cols)
+                    gap-(--card-gap)
+                    justify-start
+                "></div>
+
+                <div id="applause" class="
+                    hidden
+                    absolute
+                    rounded-xl
+                    left-0 top-0 w-full h-full
+                    grid place-items-center
+                    text-(length:--card-font-size)
+                    font-black
+                    backdrop-blur-xs
+                    text-shadow-lg text-shadow-neutral-900
+                    ">You Won!</div>
+            </div>
+
+            <div id="timer" stye="width:100%" class="
+                p-5 mb-5 border-2 border-gray-600 min-h-10 rounded-xl
+                text-center
+                font-black
+            ">00:00</div>
+        </div>
+
         <div id="controls" class="
             flex flex-row flex-wrap items-center gap-5
         ">
             <button id="btn-start" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">Start</button>
-            <button id="btn-reset" style="display: none;">Reset</button>
             <label for="cheat" class="checkbox">
                 <input type="checkbox" id="cheat" class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500">
                 Cheat

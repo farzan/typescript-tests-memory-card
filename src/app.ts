@@ -6,8 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cards: getElement<HTMLDivElement>('cards'),
         cardTemplate: getElement<HTMLTemplateElement>('card-template'),
         start: getElement<HTMLButtonElement>('btn-start'),
-        reset: getElement<HTMLButtonElement>('btn-reset'),
-        cheat: getElement<HTMLInputElement>('cheat')
+        timer: getElement<HTMLDivElement>('timer'),
+        applause: getElement<HTMLDivElement>('applause'),
+        cheat: getElement<HTMLInputElement>('cheat'),
     };
 
     new Game(dom);

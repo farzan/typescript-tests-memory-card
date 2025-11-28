@@ -13,44 +13,101 @@ type Cards = Array<Card>;
 
 type ElementToCardMap = WeakMap<CardElement, Card>
 
+type GameCallbacks = {
+    winCallback: () => void,
+}
+
 class Game {
-    private static readonly numberOfPairs: number = 5;
+    private static readonly numberOfPairs: number = 3;
     private static readonly cardRevealTimeoutMillisecond: number = 3000;
 
     private dom: IGameDOM;
+    private startTime!: number;
+    private timerIntervalHandler!: number;
+
+    private ui!: IUI;
+
+    public constructor(dom: IGameDOM) {
+        this.dom = dom;
+
+        this.ui = uiFactory(this.dom);
+
+        this.dom.start.addEventListener('click', this.start);
+    }
+
+    private start = (): void => {
+        new Round(
+            this.dom,
+            this.ui,
+            {
+                numberOfPairs: Game.numberOfPairs,
+                cardRevealTimeoutMillisecond: Game.cardRevealTimeoutMillisecond,
+            },
+            {
+                winCallback: this.winCallback,
+            }
+        );
+
+        this.startTimer();
+    }
+
+    private startTimer(): void {
+        this.startTime = Date.now();
+        this.timerIntervalHandler = this.dom.window.setInterval(this.displayTime, 1000);
+    }
+
+    private displayTime = (): void => {
+        const seconds: number = Math.round((Date.now() - Number(this.startTime)) / 1000);
+        this.ui.updateTimer(seconds);
+    }
+
+    private winCallback = (): void => {
+        this.dom.window.clearInterval(this.timerIntervalHandler)
+        this.ui.showApplause();
+    }
+}
+
+type RoundSettings = {
+    numberOfPairs: number,
+    cardRevealTimeoutMillisecond: number,
+}
+
+class Round {
+    private dom: IGameDOM;
+    private ui: IUI;
+    private roundSettings: RoundSettings;
+    private gameCallbacks: GameCallbacks;
+
     private revealedCount: number = 0;
     private previousCard: Card|null = null;
-    private elementToCardMap: ElementToCardMap;
     private cards: Cards = [];
-    private ui: IUI;
 
-    public constructor(domInterface: IGameDOM) {
-        this.dom = domInterface;
-        this.elementToCardMap = new WeakMap;
-        this.ui = uiFactory(domInterface);
+    private elementToCardMap!: ElementToCardMap;
+
+    public constructor(
+        dom: IGameDOM,
+        ui: IUI,
+        roundSettings: RoundSettings,
+        gameCallbacks: GameCallbacks,
+    ) {
+        this.dom = dom;
+        this.ui = ui,
+        this.roundSettings = roundSettings;
+        this.gameCallbacks = gameCallbacks;
 
         this.init();
     }
 
     private init(): void {
-        this.dom.start.addEventListener('click', this.start);
-        this.dom.reset.addEventListener('click', this.reset);
-    }
+        this.elementToCardMap = new WeakMap;
 
-    private start = (): void => {
-        // todo show reset
-        // todo hide start
         this.generateCards();
         this.shuffleCards();
         this.placeCards();
     }
 
-    private reset = (): void => {
-        console.log('reset!')
-    }
-
     private generateCards(): void {
-        for (let i: number = 0; i < Game.numberOfPairs; i++) {
+        for (let i: number = 0; i < this.roundSettings.numberOfPairs; i++) {
             const value: string = String(i + 1);
 
             const card1: Card = {
@@ -110,6 +167,10 @@ class Game {
 
             this.previousCard = null;
             this.revealedCount += 2;
+
+            if (this.revealedCount === this.roundSettings.numberOfPairs * 2) {
+                this.win();
+            }
         } else {
             this.previousCard = card;
             this.setTimeoutForHiding(card);
@@ -138,7 +199,11 @@ class Game {
     private setTimeoutForHiding(card: Card): void {
         card.timeoutHandler = this.dom.window.setTimeout(() => {
             this.hideAgain(card);
-        }, Game.cardRevealTimeoutMillisecond);
+        }, this.roundSettings.cardRevealTimeoutMillisecond);
+    }
+
+    private win(): void {
+        this.gameCallbacks.winCallback();
     }
 }
 

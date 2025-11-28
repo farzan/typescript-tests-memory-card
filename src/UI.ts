@@ -6,8 +6,11 @@ interface IGameDOM {
     window: Window,
     cards: HTMLDivElement,
     cardTemplate: HTMLTemplateElement,
+    timer: HTMLDivElement;
+    applause: HTMLDivElement;
+
     start: HTMLButtonElement,
-    reset: HTMLButtonElement,
+
     cheat: HTMLInputElement,
 }
 
@@ -17,6 +20,9 @@ interface IUI {
     reveal(card: CardElement): void;
     setClickHandler(card: CardElement, callback: ClicHandler): void;
     appendCard(card: CardElement): void;
+    updateTimer(seconds: number): void;
+    showApplause(): void;
+    hideApplause(): void;
 }
 
 function uiFactory(dom: IGameDOM): IUI {
@@ -69,6 +75,25 @@ class UI implements IUI {
         } else {
             this.dom.cards.classList.remove('cheating');
         }
+    }
+
+    public updateTimer(seconds: number): void {
+        this.dom.timer.innerHTML = this.formatTime(seconds);
+    }
+
+    private formatTime(seconds: number): string {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds - (mins * 60);
+
+        return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+
+    public showApplause(): void {
+        this.dom.applause.classList.remove('hidden');
+    }
+
+    public hideApplause(): void {
+        this.dom.applause.classList.add('hidden');
     }
 }
 
