@@ -6,7 +6,11 @@
 
     /* Modules */
     "module": "ESNext",                          /* Use ES modules */
-    "moduleResolution": "node",               /* Modern module resolution */
+    "moduleResolution": "bundler",               /* Modern module resolution */
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
 
     /* Emit */
     "outDir": "./dist",                          /* Output compiled JS here */

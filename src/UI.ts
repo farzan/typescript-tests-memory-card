@@ -97,4 +97,5 @@ class UI implements IUI {
     }
 }
 
-export {CardElement, ClicHandler, IUI, uiFactory, IGameDOM}
+export type { CardElement, ClicHandler, IUI, IGameDOM }
+export { uiFactory }

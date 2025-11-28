@@ -1,4 +1,6 @@
-import { Game, IGameDOM as IGameDOM } from "./MemoryCardGame.js";
+import './app.css'
+
+import { Game, IGameDOM } from "./MemoryCardGame";
 
 document.addEventListener('DOMContentLoaded', () => {
     const dom: IGameDOM = {

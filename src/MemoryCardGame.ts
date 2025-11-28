@@ -1,4 +1,4 @@
-import { CardElement, IUI, uiFactory, IGameDOM } from "./UI.js"
+import { type CardElement, type IUI, uiFactory, type IGameDOM } from "./UI"
 
 type Card = {
     value: string,
